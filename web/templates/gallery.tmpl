@@ -1,0 +1,413 @@
+{{define "gallery"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Knoll</title>
+  <link href="https://cdn.muicss.com/mui-0.10.3/css/mui.min.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+  <link rel="stylesheet" href="catppucin-frappe-prism.css" />
+
+  <style>
+    body {
+      background-color: whitesmoke;
+      font-family: "Roboto", sans-serif;
+      margin: 0;
+    }
+    .footer {
+        text-align: center;
+    }
+    .sidebar {
+      background-color: #353535;
+      color: white;
+      min-height: 100vh;
+      border-right: 1px solid #ccc;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .content {
+      background-color: whitesmoke;
+      min-height: 100vh;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    #elementDisplay {
+      display: grid;
+    }
+    .element {
+      user-select: none;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px 0;
+      cursor: pointer;
+    }
+    .element:hover {
+      background-color: #f0f0f0;
+      color: black;
+    }
+    .code-display {
+      padding: 10px;
+      white-space: pre-wrap;
+      font-family: monospace;
+      position: relative;
+      border-radius: 8px;
+    }
+    .copy-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+    .footer {
+      margin-top: auto;
+      padding-top: 20px;
+    }
+    .footer a {
+      color: whitesmoke;
+      text-decoration: underline;
+    }
+    .event-log {
+      margin-top: 20px;
+      background-color: #292c3c; /* Mantle */
+      color: #c6d0f5; /* Text */
+      padding: 10px;
+      border: 1px solid #414559; /* Surface0 */
+      border-radius: 8px;
+      height: 150px;
+      overflow-y: auto;
+      font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    }
+    .event-log .event-message {
+      border-bottom: 1px solid #414559; /* Surface0 */
+      padding: 5px 0;
+    }
+    .event-log .event-message:last-child {
+      border-bottom: none;
+    }
+  </style>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-markup.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-javascript.min.js"></script>
+</head>
+<body>
+  <div class="mui-container-fluid">
+    <div class="mui-row">
+      <div class="mui-col-md-3 sidebar">
+        <div>
+          <input type="text" id="searchInput" oninput="filterElements()" placeholder="Search elements...">
+          <ul class="mui-list--unstyled" id="elementList">
+            {{range .Elements}}
+            <li class="element mui--text-subhead" onclick="showElement('{{.Name}}')">{{.Name}}</li>
+            {{end}}
+          </ul>
+        </div>
+        <div class="footer">
+          <a href="https://github.com/dfirebaugh/knoll" target="_blank">powered by Knoll</a>
+        </div>
+      </div>
+      <div class="mui-col-md-9 content">
+        <div id="elementDisplay"></div>
+        <div id="eventLog" class="event-log"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const elements = {
+      {{range .Elements}}
+      "{{.Name}}": {{toJSON .}},
+      {{end}}
+    };
+
+    function loadScript(url, callback) {
+      const script = document.createElement('script');
+      script.src = url;
+      script.onload = callback;
+      document.head.appendChild(script);
+    }
+
+    function showElement(name, updateUrl = true) {
+      const elementData = JSON.parse(elements[name]);
+      
+      const displayArea = document.getElementById('elementDisplay');
+      const eventLog = document.getElementById('eventLog');
+      displayArea.innerHTML = '';
+      eventLog.innerHTML = ''; // Clear previous event log
+
+      if (!customElements.get(elementData.Tag)) {
+        loadScript(elementData.Script, () => createCustomElement(elementData, displayArea));
+      } else {
+        createCustomElement(elementData, displayArea);
+      }
+
+      if (updateUrl) {
+        const url = new URL(window.location);
+        url.searchParams.set('element', name);
+        window.history.pushState({}, '', url);
+      }
+    }
+
+    function createCustomElement(elementData, displayArea) {
+      const customElement = document.createElement(elementData.Tag);
+
+      for (const [attr, value] of Object.entries(elementData.ExampleData)) {
+        customElement.setAttribute(attr, value);
+      }
+
+      elementData.Events.forEach(event => {
+        customElement.addEventListener(event.Name, logEvent);
+      });
+
+      displayArea.appendChild(customElement);
+
+      const codeDisplay = document.createElement('div');
+      codeDisplay.className = 'code-display';
+
+      let code = `<${elementData.Tag}`;
+      for (const [attr, value] of Object.entries(elementData.ExampleData)) {
+        code += ` ${attr}="${value}"`;
+      }
+      code += `></${elementData.Tag}>`;
+
+      const pre = document.createElement('pre');
+      const codeElement = document.createElement('code');
+      codeElement.className = 'language-html';
+      codeElement.textContent = code;
+      pre.appendChild(codeElement);
+      codeDisplay.appendChild(pre);
+
+      const copyButton = document.createElement('button');
+      copyButton.className = 'copy-button';
+      copyButton.textContent = 'Copy';
+      copyButton.onclick = () => copyToClipboard(code);
+      codeDisplay.appendChild(copyButton);
+
+      displayArea.appendChild(codeDisplay);
+
+      Prism.highlightElement(codeElement);
+
+      const attributeTable = createAttributeTable(elementData.Attributes, elementData.ExampleData, customElement);
+      displayArea.appendChild(attributeTable);
+
+      const propertyTable = createPropertyTable(elementData.Properties, customElement);
+      displayArea.appendChild(propertyTable);
+
+      const eventTable = createEventTable(elementData.Events);
+      displayArea.appendChild(eventTable);
+    }
+
+    function createAttributeTable(attributes, exampleData, customElement) {
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      const tbody = document.createElement('tbody');
+
+      const headerRow = document.createElement('tr');
+      const headers = ['Attribute', 'Type', 'Default', 'Value'];
+      headers.forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header;
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      attributes.forEach(attr => {
+        const row = document.createElement('tr');
+        
+        const nameCell = document.createElement('td');
+        nameCell.textContent = attr.Name;
+        row.appendChild(nameCell);
+
+        const typeCell = document.createElement('td');
+        typeCell.textContent = attr.Type;
+        row.appendChild(typeCell);
+
+        const defaultCell = document.createElement('td');
+        defaultCell.textContent = attr.Default;
+        row.appendChild(defaultCell);
+
+        const valueCell = document.createElement('td');
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = exampleData[attr.Name] || '';
+        input.oninput = () => {
+          customElement.setAttribute(attr.Name, input.value);
+          updateCodeDisplay(customElement, customElement.outerHTML);
+        };
+        valueCell.appendChild(input);
+        row.appendChild(valueCell);
+
+        tbody.appendChild(row);
+      });
+
+      table.appendChild(tbody);
+      return table;
+    }
+
+    function createPropertyTable(properties, customElement) {
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      const tbody = document.createElement('tbody');
+
+      const headerRow = document.createElement('tr');
+      const headers = ['Property', 'Type', 'Default', 'Value'];
+      headers.forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header;
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      properties.forEach(prop => {
+        const row = document.createElement('tr');
+        
+        const nameCell = document.createElement('td');
+        nameCell.textContent = prop.Name;
+        row.appendChild(nameCell);
+
+        const typeCell = document.createElement('td');
+        typeCell.textContent = prop.Type;
+        row.appendChild(typeCell);
+
+        const defaultCell = document.createElement('td');
+        defaultCell.textContent = prop.Default;
+        row.appendChild(defaultCell);
+
+        const valueCell = document.createElement('td');
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = customElement[prop.Name] || '';
+        input.oninput = () => {
+          customElement[prop.Name] = input.value;
+          updateCodeDisplay(customElement, customElement.outerHTML);
+        };
+        valueCell.appendChild(input);
+        row.appendChild(valueCell);
+
+        tbody.appendChild(row);
+      });
+
+      table.appendChild(tbody);
+      return table;
+    }
+
+    function createEventTable(events) {
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      const tbody = document.createElement('tbody');
+
+      const headerRow = document.createElement('tr');
+      const headers = ['Event', 'Description'];
+      headers.forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header;
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      events.forEach(event => {
+        const row = document.createElement('tr');
+        
+        const nameCell = document.createElement('td');
+        nameCell.textContent = event.Name;
+        row.appendChild(nameCell);
+
+        const descriptionCell = document.createElement('td');
+        descriptionCell.textContent = event.Description;
+        row.appendChild(descriptionCell);
+
+        tbody.appendChild(row);
+      });
+
+      table.appendChild(tbody);
+      return table;
+    }
+
+    function logEvent(event) {
+      const log = document.getElementById('eventLog');
+      const eventMessage = document.createElement('div');
+      eventMessage.className = 'event-message';
+      eventMessage.textContent = `Event: ${event.type}, Detail: ${JSON.stringify(event.detail)}`;
+      log.appendChild(eventMessage);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function updateCodeDisplay(customElement, code) {
+      const codeDisplay = customElement.nextElementSibling;
+      if (codeDisplay && codeDisplay.classList.contains('code-display')) {
+        const codeElement = codeDisplay.querySelector('code');
+        codeElement.textContent = code;
+        Prism.highlightElement(codeElement);
+      }
+    }
+
+    function copyToClipboard(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      alert('Code copied to clipboard');
+    }
+
+    function loadElementFromQueryParams() {
+      const params = new URLSearchParams(window.location.search);
+      const elementName = params.get('element');
+      if (elementName && elements[elementName]) {
+        showElement(elementName, false);
+      }
+    }
+
+    function filterElements() {
+      const searchInput = document.getElementById('searchInput');
+      const filter = searchInput.value.toLowerCase();
+      const ul = document.getElementById('elementList');
+      const li = ul.getElementsByTagName('li');
+
+      for (let i = 0; i < li.length; i++) {
+        const elementName = li[i].textContent || li[i].innerText;
+        if (elementName.toLowerCase().indexOf(filter) > -1) {
+          li[i].style.display = '';
+        } else {
+          li[i].style.display = 'none';
+        }
+      }
+    }
+
+    window.onload = loadElementFromQueryParams;
+  </script>
+</body>
+</html>
+{{end}}
+

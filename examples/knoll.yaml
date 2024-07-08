@@ -1,0 +1,67 @@
+elements:
+  - name: "purple button"
+    tag: "my-button"
+    attributes:
+      - name: "label"
+        type: "string"
+        default: "Click Me"
+      - name: "color"
+        type: "string"
+        default: "white"
+      - name: "background-color"
+        type: "string"
+        default: "blue"
+    exampleData:
+      label: "Submit"
+      color: "white"
+      background-color: "purple"
+    script: "examples/button.js"
+    properties:
+      - name: "disabled"
+        type: "boolean"
+        default: false
+    events:
+      - name: "button-click"
+        description: "Triggered when the button is clicked."
+
+  - name: "green button"
+    tag: "my-button"
+    attributes:
+      - name: "label"
+        type: "string"
+        default: "Click Me"
+      - name: "color"
+        type: "string"
+        default: "white"
+      - name: "background-color"
+        type: "string"
+        default: "blue"
+    exampleData:
+      label: "Test Button"
+      color: "white"
+      background-color: "green"
+    script: "examples/button.js"
+    properties:
+      - name: "disabled"
+        type: "boolean"
+        default: false
+    events:
+      - name: "button-click"
+        description: "Triggered when the button is clicked."
+
+  - name: "card"
+    tag: "my-card"
+    attributes:
+      - name: "title"
+        type: "string"
+        default: "Card Title"
+      - name: "content"
+        type: "string"
+        default: "Card Content"
+    exampleData:
+      title: "Welcome"
+      content: "This is an example card"
+    script: "examples/card.js"
+    properties: []
+    events: []
+

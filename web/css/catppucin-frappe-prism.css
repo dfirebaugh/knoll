@@ -1,0 +1,137 @@
+/* Catppuccin Frappe Prism.js Theme */
+
+code[class*="language-"],
+pre[class*="language-"] {
+  color: #c6d0f5; /* Text */
+  font-size: 13px;
+  font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+  direction: ltr;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  line-height: 1.5;
+  -moz-tab-size: 4;
+  -o-tab-size: 4;
+  tab-size: 4;
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+}
+pre[class*="language-"]::selection,
+code[class*="language-"]::selection,
+pre[class*="language-"]::-moz-selection,
+code[class*="language-"]::-moz-selection {
+  text-shadow: none;
+  background: #eebebe; /* Flamingo */
+}
+@media print {
+  pre[class*="language-"],
+  code[class*="language-"] {
+    text-shadow: none;
+  }
+}
+/* Code blocks */
+pre[class*="language-"] {
+  padding: 1em;
+  margin: .5em 0;
+  overflow: auto;
+  background: #292c3c; /* Mantle */
+  border: 1px solid #414559; /* Surface0 */
+  border-radius: 8px;
+}
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+  padding: .1em .3em;
+  border-radius: .3em;
+  color: #e78284; /* Red */
+  background: #414559; /* Surface0 */
+}
+/*********************************************************
+* Tokens
+*/
+.namespace {
+  opacity: .7;
+}
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #737994; /* Overlay0 */
+}
+.token.punctuation {
+  color: #c6d0f5; /* Text */
+}
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  color: #e78284; /* Red */
+}
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: #a6d189; /* Green */
+}
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: #ca9ee6; /* Mauve */
+  background: #292c3c; /* Mantle */
+}
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: #8caaee; /* Blue */
+}
+.token.function {
+  color: #f4b8e4; /* Pink */
+}
+.token.regex,
+.token.important,
+.token.variable {
+  color: #ef9f76; /* Peach */
+}
+.token.important,
+.token.bold {
+  font-weight: bold;
+}
+.token.italic {
+  font-style: italic;
+}
+.token.entity {
+  cursor: help;
+}
+/*********************************************************
+* Line highlighting
+*/
+pre[data-line] {
+  position: relative;
+}
+pre[class*="language-"] > code[class*="language-"] {
+  position: relative;
+  z-index: 1;
+}
+.line-highlight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  padding: inherit 0;
+  margin-top: 1em;
+  background: #414559; /* Surface0 */
+  box-shadow: inset 5px 0 0 #51576d; /* Surface1 */
+  z-index: 0;
+  pointer-events: none;
+  line-height: inherit;
+  white-space: pre;
+}
+
