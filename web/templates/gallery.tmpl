@@ -43,11 +43,16 @@
       border: 1px solid #ccc;
       padding: 10px;
       margin: 10px 0;
+      color: whitesmoke;
       cursor: pointer;
     }
     .element:hover {
       background-color: #f0f0f0;
       color: black;
+    }
+    a {
+      color: whitesmoke;
+      text-decoration: none;
     }
     .code-display {
       padding: 10px;
@@ -125,7 +130,7 @@
           <input type="text" id="searchInput" oninput="filterElements()" placeholder="Search elements...">
           <ul class="mui-list--unstyled" id="elementList">
             {{range .Elements}}
-            <li class="element mui--text-subhead" onclick="showElement('{{.Name}}')">{{.Name}}</li>
+          <a href="?element={{.Name}}" onclick="showElement('{{.Name}}'); return false;"><li class="element mui--text-subhead">{{.Name}}</li></a>
             {{end}}
           </ul>
         </div>
